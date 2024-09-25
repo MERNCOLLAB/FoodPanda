@@ -1,21 +1,46 @@
-import "./App.css";
-import Iframe from "react-iframe";
+import { useState, useEffect } from "react";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+
 function App() {
+  const [position, setPosition] = useState(null);
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude } = pos.coords;
+          setPosition([latitude, longitude]);
+        },
+        (err) => {
+          console.error("Error getting location:", err);
+        }
+      );
+    } else {
+      console.error("Geolocation is not supported by this browser.");
+    }
+  }, []);
+
   return (
-    <>
-      <div className="frame h-screen w-screen">
-        <div className="flex  relative mb-[1em] w-full h-full">
-          <Iframe
-            url="https://my.spline.design/untitled-ca6514341383ae3018bef86408dfaa28/"
-            id=""
-            className="w-full"
-            display="block"
-            position="relative"
+    <div>
+      {position ? (
+        <MapContainer
+          className="map"
+          center={position}
+          zoom={13}
+          scrollWheelZoom={true}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          <div className="border bg-slate-300 z-50 absolute w-full h-[70px] bottom-0  left-0"></div>
-        </div>
-      </div>
-    </>
+          <Marker position={position}>
+            <Popup>You are here.</Popup>
+          </Marker>
+        </MapContainer>
+      ) : (
+        <p>Loading your location...</p>
+      )}
+    </div>
   );
 }
 
